@@ -41,43 +41,43 @@ Basic → Intermediate → Advanced
 
 ## 🟡 Intermediate
 
-### 6. Scope & Closures
+### 6. [Scope & Closures](intermediate/6-scope-and-closures)
 6.1 Lexical scope  
 6.2 Closures in real systems  
 6.3 Common closure pitfalls  
 6.4 Memory retention via closures
 
-### 7. Execution Model
+### 7. [Execution Model](intermediate/7-execution-model)
 7.1 Event loop (browser vs Node)  
 7.2 Microtasks vs macrotasks  
 7.3 Promise resolution order  
 7.4 Blocking the event loop
 
-### 8. Prototypes & Inheritance
+### 8. [Prototypes & Inheritance](intermediate/8-prototypes-and-inheritance)
 8.1 Prototype chain  
 8.2 `prototype` vs `__proto__`  
 8.3 ES6 classes under the hood  
 8.4 Inheritance vs composition
 
-### 9. `this` Binding
+### 9. [`this` Binding](intermediate/9-this-binding)
 9.1 Implicit / explicit / default binding  
 9.2 `bind`, `call`, `apply`  
 9.3 Arrow functions and lexical `this`  
 9.4 Common interview traps
 
-### 10. ES Modules
+### 10. [ES Modules](intermediate/10-es-modules)
 10.1 ESM vs CommonJS  
 10.2 Static vs dynamic imports  
 10.3 Circular dependencies  
 10.4 Tree-shaking implications
 
-### 11. Error Handling
+### 11. [Error Handling](intermediate/11-error-handling)
 11.1 Sync vs async errors  
 11.2 Error propagation in promises  
 11.3 Custom error types  
 11.4 Error boundaries (conceptual)
 
-### 12. Data Structures in JS
+### 12. [Data Structures in JS](intermediate/12-data-structures-in-js)
 12.1 `Map` vs `Object`  
 12.2 `Set` vs arrays  
 12.3 WeakMap / WeakSet use cases  
