@@ -1,43 +1,70 @@
-# `this` Binding
+# this Binding
 
 ## What This Topic Is Really About
-- `this` is determined by the call site, not by where a function is defined.
-- Arrow functions capture lexical `this` and ignore rebinding.
-- Interviewers look for precise reasoning across implicit and explicit binding rules.
+- `this` is a runtime binding determined by the *call site*, not by where a function is defined.
+- Most bugs around `this` come from losing track of how a function is invoked.
+- Interviewers use this topic to quickly distinguish between memorized rules and real execution reasoning.
 
 ## Core Concepts
-- Default binding depends on strict mode; `this` is `undefined` in strict mode.
-- Implicit binding uses the receiver object (`obj.method()`).
-- Explicit binding uses `call`, `apply`, or `bind`.
-- Arrow functions capture lexical `this` and cannot be re-bound.
-- Common traps include method extraction and callback invocation.
+- Binding is resolved **at call time**.
+- Four binding rules, in precedence order:
+  1. `new` binding
+  2. Explicit binding (`call`, `apply`, `bind`)
+  3. Implicit binding (`obj.method()`)
+  4. Default binding (global or `undefined` in strict mode)
+- Arrow functions do **not** have their own `this`; they capture it lexically.
+- `bind` creates a new function with permanent binding.
 
 ## Code Examples
 ```js
 'use strict';
-const obj = { x: 1, f() { return this.x; } };
-const f = obj.f;
-f(); // undefined
-f.call({ x: 2 }); // 2
+
+function f() {
+  return this;
+}
+
+f(); // undefined (default binding, strict mode)
 ```
 
 ```js
 const obj = {
   x: 1,
-  f() { return () => this.x; }
+  f() { return this.x; }
 };
-const g = obj.f();
-g.call({ x: 2 }); // 1
+
+const g = obj.f;
+g(); // undefined (lost implicit binding)
+```
+
+```js
+function Foo(x) {
+  this.x = x;
+}
+
+const a = new Foo(1);
+Foo.call({ x: 2 }, 3); // explicit binding ignored by `new`
+```
+
+```js
+const obj = {
+  x: 1,
+  f() {
+    return () => this.x;
+  }
+};
+
+obj.f().call({ x: 2 }); // 1 (arrow captures lexical this)
 ```
 
 ## Gotchas & Tricky Interview Cases
-- Extracted methods lose implicit binding.
-- `bind` sets `this` permanently, but arrows ignore it.
-- Passing methods as callbacks often changes the receiver.
-- `this` in strict mode defaults to `undefined`, not the global object.
+- Method extraction almost always breaks implicit binding.
+- `bind` cannot be overridden, even with `call` or `apply`.
+- `new` binding has highest precedence.
+- Arrow functions should not be used as methods when dynamic `this` is needed.
+- Default binding differs between strict and sloppy mode.
 
 ## Mental Checklist for Interviews
-- What is the call site and receiver object?
-- Is the function an arrow or a normal function?
-- Is there explicit binding via `call`, `apply`, or `bind`?
-- Is strict mode affecting the default binding?
+- Identify the exact call site.
+- Apply binding precedence rules explicitly.
+- Check whether the function is an arrow.
+- Never explain `this` in terms of lexical scope (except arrows).

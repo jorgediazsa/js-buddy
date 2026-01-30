@@ -1,47 +1,52 @@
 # ES Modules
 
 ## What This Topic Is Really About
-- Modules define how code is loaded, linked, and executed.
-- ESM has static structure with live bindings; CommonJS is dynamic with value snapshots.
-- Interviewers test understanding of import timing, circularity, and tree-shaking constraints.
+- ES Modules define a **static, analyzable module graph** with live bindings.
+- They change execution order, scoping, and dependency management compared to CommonJS.
+- Interviewers use this to test understanding of loading, evaluation, and circular dependencies.
 
 ## Core Concepts
-- ESM uses `import`/`export` and is statically analyzable.
-- CommonJS uses `require`/`module.exports` and evaluates on demand.
-- Static imports are hoisted; dynamic `import()` returns a Promise.
-- Circular dependencies are resolved via live bindings and can observe uninitialized values.
-- Tree-shaking relies on static ESM structure and unused export elimination.
+- Imports are **static** and hoisted; the module graph is built before execution.
+- Imports are **live bindings**, not copied values.
+- Each module is evaluated **once** and then cached.
+- Modules have their own scope (top-level `this` is `undefined`).
+- Circular dependencies are resolved via staged execution, not runtime `require`.
 
 ## Code Examples
 ```js
-// a.mjs
-export let value = 1;
-export function set(v) { value = v; }
-
-// b.mjs
-import { value, set } from './a.mjs';
-set(2);
-value; // 2 (live binding)
-```
-
-```js
-// dynamic import
-async function load(flag) {
-  if (flag) {
-    const mod = await import('./feature.mjs');
-    return mod.run();
-  }
+// a.js
+export let count = 0;
+export function inc() {
+  count++;
 }
 ```
 
+```js
+// b.js
+import { count, inc } from './a.js';
+
+inc();
+console.log(count); // 1 (live binding)
+```
+
+```js
+// c.js
+import { x } from './d.js';
+console.log(x);
+
+// d.js
+export let x = 1;
+```
+
 ## Gotchas & Tricky Interview Cases
-- ESM bindings are live; CommonJS imports are snapshots of exported values.
-- Circular imports can yield `undefined` during module initialization.
-- Static imports execute before module body; dynamic imports run at runtime.
-- Tree-shaking only works when imports/exports are statically analyzable.
+- Imported bindings are read-only views.
+- Default exports are just named bindings under the hood.
+- Circular imports can expose uninitialized bindings.
+- No conditional or dynamic static imports (`import()` is different).
+- Mixing CommonJS and ESM has edge cases.
 
 ## Mental Checklist for Interviews
-- Is this ESM or CommonJS, and how does that affect loading?
-- Are imports static or dynamic?
-- Could there be a circular dependency during initialization?
-- Are exported bindings live or copied?
+- Emphasize static analysis and live bindings.
+- Contrast ESM with CommonJS behavior.
+- Explain circular dependency execution order.
+- Mention top-level scope differences.

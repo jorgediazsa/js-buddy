@@ -1,43 +1,69 @@
 # Execution Model
 
 ## What This Topic Is Really About
-- The event loop schedules work around a single call stack.
-- Microtasks and macrotasks have strict ordering that drives observable behavior.
-- Interviewers want precise ordering predictions and clear timing explanations.
+- How JavaScript prepares and executes code through well-defined phases.
+- Why separating *creation* from *execution* explains hoisting, TDZ, and call stack behavior.
+- Interviewers use this topic to test whether you can reason precisely about runtime, not just recall rules.
 
 ## Core Concepts
-- The call stack must clear before any queued task executes.
-- Macrotasks include timers and I/O callbacks.
-- Microtasks include promise reactions and queueMicrotask.
-- Microtasks drain before the next macrotask is processed.
-- Promise resolution order follows the microtask queue.
-- Blocking the event loop delays all queued work.
+- Two phases per execution context: **creation phase** and **execution phase**.
+- Execution Context types: **Global** and **Function** (eval is legacy).
+- During creation:
+  - Function declarations are fully initialized.
+  - `var` bindings are created and initialized to `undefined`.
+  - `let`/`const` bindings are created but left uninitialized (TDZ).
+- During execution:
+  - Statements run top to bottom.
+  - Bindings receive values when assignments are executed.
+- Call Stack:
+  - LIFO structure.
+  - Only the top frame executes at any time.
+- Lexical Environment vs Variable Environment:
+  - Historically distinct; today mostly unified but still relevant conceptually.
 
 ## Code Examples
 ```js
-const order = [];
-setTimeout(() => order.push('timeout'), 0);
-Promise.resolve().then(() => order.push('then'));
-queueMicrotask(() => order.push('micro'));
-order.push('sync');
-// order becomes ['sync', 'then', 'micro', 'timeout']
+// Creation vs execution
+console.log(a); // undefined
+var a = 1;
 ```
 
 ```js
-setTimeout(() => console.log('timer'), 0);
-const start = Date.now();
-while (Date.now() - start < 30) {}
-// 'timer' runs after the loop, not at t=0
+// TDZ
+try {
+  console.log(b);
+} catch (e) {
+  e.name; // ReferenceError
+}
+let b = 2;
+```
+
+```js
+// Hoisting differences
+foo(); // ok
+function foo() {}
+
+bar(); // TypeError
+var bar = function () {};
+```
+
+```js
+// Call stack growth
+function a() { b(); }
+function b() { c(); }
+function c() { return; }
+a();
 ```
 
 ## Gotchas & Tricky Interview Cases
-- `setTimeout(fn, 0)` runs after the stack and all microtasks.
-- Promise handlers run asynchronously even if already resolved.
-- Long synchronous work blocks timers and promise reactions.
-- Browser and Node share the model but differ in macrotask sources and phases.
+- Hoisting does not mean early initialization.
+- TDZ exists from scope entry until declaration is evaluated.
+- Stack overflow errors relate to call stack depth, not heap memory.
+- Recursion combined with closures can retain large lexical environments.
+- Misunderstanding creation phase often leads to incorrect mental models of `let`/`const`.
 
 ## Mental Checklist for Interviews
-- What is currently on the call stack?
-- Which callbacks are microtasks vs macrotasks?
-- When does the microtask queue drain?
-- Is the event loop blocked by synchronous work?
+- Explicitly separate creation phase from execution phase.
+- Track which bindings exist and their initialization state.
+- Follow execution context pushes/pops on the call stack.
+- Explain behavior using execution context and environment terminology, not heuristics.

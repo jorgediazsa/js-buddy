@@ -1,43 +1,59 @@
 # Prototypes & Inheritance
 
 ## What This Topic Is Really About
-- Objects delegate property access via the prototype chain.
-- `prototype` and `__proto__` describe different sides of the same linkage.
-- Interviews test understanding of class sugar and tradeoffs vs composition.
+- JavaScript inheritance is based on *delegation*, not copying.
+- Understanding prototype chains is essential to reason about property access, method dispatch, and performance.
+- Interviews use this topic to detect class-based mental models that don’t apply to JavaScript.
 
 ## Core Concepts
-- The prototype chain drives property lookup and method sharing.
-- `Function.prototype` is not the same as an instance's `__proto__`.
-- `class` syntax builds on prototypes and `[[Prototype]]` links.
-- Inheritance reuses behavior; composition wires behavior explicitly.
+- Every object has an internal `[[Prototype]]` pointer (accessible via `Object.getPrototypeOf`).
+- Property **reads** walk the prototype chain until found or until `null`.
+- Property **writes** always affect the receiver:
+  - If the property exists on the object, it is overwritten.
+  - If it exists only on the prototype, a new own property is created (shadowing).
+- Functions have a `prototype` property used when they are called with `new`.
+- `class` syntax is declarative sugar over prototype wiring.
 
 ## Code Examples
 ```js
-function Base() {}
-Base.prototype.greet = function () { return 'base'; };
+const proto = { x: 1 };
+const obj = Object.create(proto);
 
-function Child() {}
-Child.prototype = Object.create(Base.prototype);
-Child.prototype.constructor = Child;
-
-const c = new Child();
-c.greet(); // 'base'
+obj.x;        // 1 (read from prototype)
+obj.x = 2;    // creates own property
+proto.x;      // 1
+obj.hasOwnProperty('x'); // true
 ```
 
 ```js
-class A { method() { return 'a'; } }
-const a = new A();
-a.__proto__ === A.prototype; // true
+function A() {}
+A.prototype.say = function () { return 'A'; };
+
+function B() {}
+B.prototype = Object.create(A.prototype);
+B.prototype.constructor = B;
+
+const b = new B();
+b.say(); // 'A'
+```
+
+```js
+class A {
+  foo() { return 'A'; }
+}
+class B extends A {}
+new B().foo(); // 'A'
 ```
 
 ## Gotchas & Tricky Interview Cases
-- Replacing a prototype without resetting `constructor` breaks instance metadata.
-- Methods on the prototype are shared; mutable prototype state is shared too.
-- `__proto__` is legacy and can be confused with `prototype` on functions.
-- Inheritance can hide data flow; composition often makes dependencies explicit.
+- Methods live on prototypes; instance properties do not.
+- Arrow functions should not be used as prototype methods (lexical `this`).
+- Changing an object’s prototype at runtime is slow and de-optimizes engines.
+- `instanceof` depends on the prototype chain, not the constructor name.
+- Shadowing can hide prototype properties and cause subtle bugs.
 
 ## Mental Checklist for Interviews
-- Where does a property resolve on the prototype chain?
-- Is a method stored per-instance or on the prototype?
-- Which link is being discussed: `prototype` or `__proto__`?
-- Is inheritance the right tool or is composition clearer?
+- Distinguish property *lookup* from property *assignment*.
+- Be explicit about where a property lives (own vs prototype).
+- Explain `class` behavior in terms of prototypes.
+- Avoid mixing classical inheritance terminology with delegation.

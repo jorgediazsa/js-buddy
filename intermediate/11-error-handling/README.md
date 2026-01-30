@@ -1,49 +1,72 @@
 # Error Handling
 
 ## What This Topic Is Really About
-- Errors define control flow for failures across sync and async boundaries.
-- Promise chains propagate errors predictably when wired correctly.
-- Interviewers look for precise error domain boundaries and recovery strategies.
+- Error handling in JavaScript is about **control flow interruption and propagation**, not just catching exceptions.
+- The most common mistakes come from mixing synchronous and asynchronous error models.
+- Interviewers use this topic to test whether you can reason about *where* an error travels and *who* is responsible for handling it.
 
 ## Core Concepts
-- try/catch only handles synchronous exceptions.
-- Async errors must be handled within callbacks or promise chains.
-- Promise `.then` and `.catch` propagate errors down the chain.
-- Custom error types encode domain-specific failure categories.
-- Error boundaries are conceptual isolation points for failures.
+- `throw` immediately interrupts the current execution context.
+- `try/catch` only handles **synchronous** errors in the same call stack.
+- Asynchronous errors propagate through **callbacks or promise chains**, not `try/catch`.
+- Promises represent a separate error channel via rejection.
+- `finally` always executes, regardless of success or failure.
+- `async/await` is syntax sugar over promises; error semantics are unchanged.
 
 ## Code Examples
 ```js
+// try/catch only works synchronously
 try {
-  setTimeout(() => { throw new Error('boom'); }, 0);
+  setTimeout(() => {
+    throw new Error('x');
+  }, 0);
 } catch (e) {
   // never runs
 }
 ```
 
 ```js
+// Promise rejection propagation
 Promise.resolve()
-  .then(() => { throw new TypeError('bad'); })
-  .catch(err => err.name); // 'TypeError'
+  .then(() => {
+    throw new Error('y');
+  })
+  .catch(e => e.message);
 ```
 
 ```js
-class ValidationError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = 'ValidationError';
+// async/await error handling
+async function f() {
+  throw new Error('z');
+}
+
+(async () => {
+  try {
+    await f();
+  } catch (e) {
+    e.message; // 'z'
   }
+})();
+```
+
+```js
+// finally always runs
+try {
+  return 1;
+} finally {
+  console.log('cleanup');
 }
 ```
 
 ## Gotchas & Tricky Interview Cases
-- Async exceptions do not propagate to outer try/catch.
-- Forgetting to return a promise breaks error propagation in chains.
-- Swallowing errors without rethrowing can hide failures.
-- Error boundaries only apply to the code they wrap, not unrelated async work.
+- Throwing non-`Error` values loses stack traces and debugging context.
+- Errors inside callbacks bypass outer `try/catch`.
+- Unhandled promise rejections can crash processes (Node.js).
+- `finally` executes even after `return` or `throw`.
+- Swallowing errors in `.catch` can hide failures.
 
 ## Mental Checklist for Interviews
-- Is the error synchronous or asynchronous?
-- Where is the nearest error boundary in the call chain?
-- Are promise returns preserving propagation?
-- Should this be a custom error type?
+- Identify the sync vs async boundary.
+- Trace the exact propagation path of the error.
+- State who owns handling responsibility.
+- Prefer `Error` objects and explicit propagation.
