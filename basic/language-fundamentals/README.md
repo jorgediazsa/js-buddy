@@ -8,8 +8,6 @@ Most interview questions here are not about syntax, but about:
 - where they live (scope / environment records)
 - what exactly is passed around (values vs object identities)
 
-If you have the right mental model, hoisting, TDZ, and “pass by reference” questions become trivial.
-
 ---
 
 ## Core Concepts
