@@ -7,31 +7,31 @@ Basic → Intermediate → Advanced
 
 ## 🟢 Basic
 
-### 1. [Language Fundamentals](basic/language-fundamentals)
+### 1. [Language Fundamentals](basic/1-language-fundamentals)
 1.1 `var` vs `let` vs `const`  
 1.2 Hoisting (functions vs variables)  
 1.3 Primitive vs reference types  
 1.4 Pass-by-value vs pass-by-reference (what actually happens)
 
-### 2. [Types & Coercion](basic/types-and-coercion)
+### 2. [Types & Coercion](basic/2-types-and-coercion)
 2.1 Truthy / falsy values  
 2.2 `==` vs `===`  
 2.3 Implicit vs explicit coercion  
 2.4 `typeof`, `instanceof`
 
-### 3. [Functions](basic/functions)
+### 3. [Functions](basic/3-functions)
 3.1 Function declarations vs expressions  
 3.2 Arrow functions semantics  
 3.3 Default parameters  
 3.4 Rest / spread basics
 
-### 4. [Objects & Arrays](basic/objects-and-arrays)
+### 4. [Objects & Arrays](basic/4-objects-and-arrays)
 4.1 Property access patterns  
 4.2 Shallow vs deep copy  
 4.3 Array methods (`map`, `filter`, `reduce`)  
 4.4 Destructuring basics
 
-### 5. [Asynchronous Basics](basic/asynchronous-basics)
+### 5. [Asynchronous Basics](basic/5-asynchronous-basics)
 5.1 Call stack concept  
 5.2 `setTimeout` vs synchronous execution  
 5.3 Callbacks and callback hell  
