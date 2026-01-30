@@ -1,50 +1,147 @@
 # Asynchronous Basics
 
 ## What This Topic Is Really About
-- The single-threaded execution model and how tasks are scheduled around the call stack.
-- Interviews target reasoning about timing, ordering, and error propagation.
+This topic is about understanding JavaScript’s **single-threaded execution model**
+and how asynchronous work is **scheduled around the call stack**.
+
+In interviews, async basics are used to test:
+- ordering and timing
+- mental execution of code
+- understanding of error propagation
+- ability to reason about non-blocking systems
+
+At senior level, clarity about *when* code runs matters more than APIs.
+
+---
 
 ## Core Concepts
-- Call stack concept: synchronous frames push/pop; stack must clear before queued tasks run.
-- `setTimeout` vs synchronous execution: timers enqueue macrotasks after the current stack completes.
-- Callbacks and callback hell: nested callbacks obscure control flow and error handling.
-- Promises (basic usage): represent eventual values with predictable chaining and async error flow.
+
+### Call Stack
+- JavaScript executes one frame at a time.
+- Synchronous code must fully complete before async callbacks run.
+- A blocked stack blocks *everything*.
+
+---
+
+### Task Queues
+- Macrotasks: timers, I/O callbacks, UI events.
+- Microtasks: promise reactions, `queueMicrotask`.
+- Microtasks always run **before** the next macrotask.
+
+---
+
+### Timers (`setTimeout`)
+- `setTimeout(fn, 0)` does not mean “run immediately”.
+- It enqueues a macrotask that runs after:
+  - the current call stack
+  - all pending microtasks
+
+---
+
+### Callbacks
+- Callbacks invert control flow.
+- Errors must be handled *inside* the callback.
+- Try/catch only works synchronously.
+
+---
+
+### Promises
+- Promises represent eventual values.
+- `.then` / `.catch` handlers are scheduled as microtasks.
+- Errors propagate through the chain automatically.
+
+---
 
 ## Code Examples
+
+### Stack vs Timer
 ```js
 console.log("A");
+
 setTimeout(() => console.log("B"), 0);
+
 console.log("C");
-// Output: A, C, B
+// A, C, B
 ```
 
+---
+
+### Callback Error Handling
 ```js
-// Callback error handling vs promise chaining
 function cbStyle(fn, cb) {
-  try { cb(null, fn()); } catch (e) { cb(e); }
+  try {
+    cb(null, fn());
+  } catch (e) {
+    cb(e);
+  }
 }
-cbStyle(() => { throw new Error("x"); }, (err) => console.log(!!err));
 
-Promise.resolve()
-  .then(() => { throw new Error("y"); })
-  .catch(() => console.log(true));
+cbStyle(
+  () => { throw new Error("x"); },
+  err => console.log(Boolean(err))
+);
 ```
 
+---
+
+### Promise Error Propagation
 ```js
-// Promise resolution is async
+Promise.resolve()
+  .then(() => {
+    throw new Error("y");
+  })
+  .catch(() => {
+    console.log(true);
+  });
+```
+
+---
+
+### Promise Scheduling
+```js
 let done = false;
-Promise.resolve().then(() => { done = true; });
+
+Promise.resolve().then(() => {
+  done = true;
+});
+
 console.log(done); // false
 ```
 
+---
+
+### Microtasks vs Macrotasks
+```js
+setTimeout(() => console.log("timeout"), 0);
+
+Promise.resolve().then(() => console.log("promise"));
+
+// promise
+// timeout
+```
+
+---
+
 ## Gotchas & Tricky Interview Cases
-- `setTimeout(fn, 0)` is not immediate; it waits for the stack and task queue turn.
-- Exceptions in callbacks must be handled in the callback; try/catch outside won't help.
-- A promise handler runs in a microtask after the current stack, even if already resolved.
-- Forgetting to return a promise in a chain breaks sequencing.
+- `setTimeout(fn, 0)` is delayed, not immediate.
+- Try/catch cannot catch async errors.
+- Promise callbacks always run asynchronously.
+- Forgetting to return a promise breaks chaining.
+- Microtasks can starve macrotasks if abused.
+
+---
 
 ## Mental Checklist for Interviews
-- Describe the stack, queue, and when tasks run.
-- Distinguish sync errors from async errors and their handling.
-- Explain ordering for timers vs promise callbacks.
-- State how chaining preserves sequencing.
+- What is on the call stack right now?
+- Is this a microtask or a macrotask?
+- When will this callback actually run?
+- How are errors propagated?
+- Does this block the event loop?
+
+---
+
+## Senior-Level Insight
+Async bugs are usually **ordering bugs**, not API bugs.
+
+If you can reliably explain *why* something runs before or after something else,
+you demonstrate real mastery of JavaScript’s execution model.
