@@ -42,6 +42,63 @@ Key distinction:
 - When passing an object, the value being passed is a reference to that object.
 - Rebinding a parameter never affects the caller; mutating the object does.
 
+
+---
+
+### Closures and Capturing Semantics
+- A closure captures **bindings**, not snapshots of values.
+- If multiple functions close over the *same binding*, they will observe the latest value.
+- `var` in a loop creates **one function-scoped binding** shared by all iterations.
+- `let` in a loop creates a **fresh binding per iteration** (the classic fix).
+
+Classic trap:
+```js
+const fns = [];
+for (var i = 0; i < 3; i++) fns.push(() => i);
+fns[0](); // 3, not 0 (all share the same `i`)
+```
+
+Fix:
+```js
+const fns = [];
+for (let i = 0; i < 3; i++) fns.push(() => i);
+fns[0](); // 0
+```
+
+---
+
+### Aliasing, Shallow Equality, and “Shared Nested State”
+- Two variables can point to the **same object** (aliasing): `a === b`.
+- Two different objects can be **shallow-equal** (same keys/values) but still be different identities.
+- Nested references (arrays/objects) can be **shared** even when the top-level objects are not.
+
+Example:
+```js
+const shared = [];
+const p = { x: 1, list: shared };
+const q = { x: 1, list: shared };
+
+p.list.push(42);
+q.list[0]; // 42 (same nested array)
+```
+
+Shallow equality (no JSON stringify):
+- Compare `Object.keys` length and `===` for each key's value.
+- Note: if a value is an object/array, `===` compares **identity**, not structure.
+
+---
+
+### Isolation and “No Global Leaks” (Node.js `vm`)
+Some exercises evaluate code snippets to observe runtime behavior (hoisting/TDZ/function hoisting).
+Do it in an isolated environment to avoid polluting the process/global scope.
+
+In Node.js, use the built-in `node:vm` module:
+- `vm.createContext({})` creates a sandboxed global.
+- `vm.runInContext(code, context)` evaluates without leaking bindings to `globalThis`.
+
+Also note:
+- `'use strict'` prevents accidental implicit globals (e.g. assigning to an undeclared name).
+
 ---
 
 ## Code Examples

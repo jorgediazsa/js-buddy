@@ -1,147 +1,191 @@
 # Asynchronous Basics
 
-## What This Topic Is Really About
-This topic is about understanding JavaScript’s **single-threaded execution model**
-and how asynchronous work is **scheduled around the call stack**.
+This section explains **how JavaScript actually executes asynchronous code**: the event loop, task queues, promises, and `async` / `await`. The goal is to build a *predictive mental model*, not to memorize syntax.
 
-In interviews, async basics are used to test:
-- ordering and timing
-- mental execution of code
-- understanding of error propagation
-- ability to reason about non-blocking systems
-
-At senior level, clarity about *when* code runs matters more than APIs.
+The exercises in this module are designed to break the common illusion that JavaScript runs things "in parallel".
 
 ---
 
-## Core Concepts
+## Why this matters
 
-### Call Stack
-- JavaScript executes one frame at a time.
-- Synchronous code must fully complete before async callbacks run.
-- A blocked stack blocks *everything*.
+JavaScript is **single-threaded**, yet it handles concurrency through:
 
----
+* The **call stack**
+* The **event loop**
+* Multiple **task queues**
 
-### Task Queues
-- Macrotasks: timers, I/O callbacks, UI events.
-- Microtasks: promise reactions, `queueMicrotask`.
-- Microtasks always run **before** the next macrotask.
+Most async bugs come from misunderstanding *when* code runs, not *what* it does.
 
 ---
 
-### Timers (`setTimeout`)
-- `setTimeout(fn, 0)` does not mean “run immediately”.
-- It enqueues a macrotask that runs after:
-  - the current call stack
-  - all pending microtasks
+## The Call Stack
 
----
+* JavaScript executes code synchronously on a single call stack.
+* A function must finish before the next one starts.
 
-### Callbacks
-- Callbacks invert control flow.
-- Errors must be handled *inside* the callback.
-- Try/catch only works synchronously.
-
----
-
-### Promises
-- Promises represent eventual values.
-- `.then` / `.catch` handlers are scheduled as microtasks.
-- Errors propagate through the chain automatically.
-
----
-
-## Code Examples
-
-### Stack vs Timer
 ```js
-console.log("A");
-
-setTimeout(() => console.log("B"), 0);
-
-console.log("C");
-// A, C, B
-```
-
----
-
-### Callback Error Handling
-```js
-function cbStyle(fn, cb) {
-  try {
-    cb(null, fn());
-  } catch (e) {
-    cb(e);
-  }
+function a() {
+  b();
 }
-
-cbStyle(
-  () => { throw new Error("x"); },
-  err => console.log(Boolean(err))
-);
+function b() {}
+a();
 ```
+
+Nothing async happens until the stack is empty.
 
 ---
 
-### Promise Error Propagation
+## The Event Loop (High-level)
+
+The event loop continuously:
+
+1. Checks if the call stack is empty
+2. Pulls the next task from a queue
+3. Pushes it onto the call stack
+
+Async APIs schedule work **for later**, they do not run concurrently.
+
+---
+
+## Task Queues
+
+JavaScript has **multiple queues**. The most relevant here:
+
+### Macro-task queue
+
+Scheduled by:
+
+* `setTimeout`
+* `setInterval`
+* I/O callbacks
+
+### Microtask queue
+
+Scheduled by:
+
+* `Promise.then`
+* `Promise.catch`
+* `Promise.finally`
+* `queueMicrotask`
+
+**Microtasks always run before the next macrotask**, once the stack is empty.
+
+---
+
+## `setTimeout` is not "exact"
+
+```js
+setTimeout(fn, 0);
+```
+
+Means:
+
+> “Run `fn` **after** the current stack and all pending microtasks.”
+
+Not "run immediately".
+
+---
+
+## Promises
+
+A Promise represents a value that may be available **now, later, or never**.
+
+States:
+
+* `pending`
+* `fulfilled`
+* `rejected`
+
+Important rules:
+
+* A promise settles **once**
+* `.then` callbacks always run asynchronously (microtasks)
+
+---
+
+## Promise chaining
+
+```js
+Promise.resolve(1)
+  .then(x => x + 1)
+  .then(x => x + 1)
+```
+
+Each `.then`:
+
+* Receives the previous value
+* Returns a new promise
+* Schedules a microtask
+
+---
+
+## Error handling with Promises
+
+* Throwing inside `.then` rejects the next promise
+* `.catch` handles rejections
+
 ```js
 Promise.resolve()
-  .then(() => {
-    throw new Error("y");
-  })
-  .catch(() => {
-    console.log(true);
-  });
+  .then(() => { throw new Error(); })
+  .catch(err => {})
 ```
 
 ---
 
-### Promise Scheduling
+## `async` / `await`
+
+`async` / `await` is **syntax sugar over promises**.
+
+Rules:
+
+* `async` functions always return a Promise
+* `await` pauses *only the async function*, not the thread
+* `await` unwraps fulfilled values or throws rejections
+
 ```js
-let done = false;
-
-Promise.resolve().then(() => {
-  done = true;
-});
-
-console.log(done); // false
+async function fn() {
+  const x = await Promise.resolve(1);
+  return x + 1;
+}
 ```
 
 ---
 
-### Microtasks vs Macrotasks
-```js
-setTimeout(() => console.log("timeout"), 0);
+## Execution order intuition
 
-Promise.resolve().then(() => console.log("promise"));
+Key mental model:
 
-// promise
-// timeout
-```
+1. Run synchronous code
+2. Drain microtask queue
+3. Run one macrotask
+4. Repeat
 
----
-
-## Gotchas & Tricky Interview Cases
-- `setTimeout(fn, 0)` is delayed, not immediate.
-- Try/catch cannot catch async errors.
-- Promise callbacks always run asynchronously.
-- Forgetting to return a promise breaks chaining.
-- Microtasks can starve macrotasks if abused.
+This explains most ordering puzzles.
 
 ---
 
-## Mental Checklist for Interviews
-- What is on the call stack right now?
-- Is this a microtask or a macrotask?
-- When will this callback actually run?
-- How are errors propagated?
-- Does this block the event loop?
+## Common pitfalls covered by exercises
+
+The exercises rely on understanding:
+
+* That promises run **before** timers
+* That `await` does not block the event loop
+* That rejected promises propagate unless caught
+* That async functions return promises implicitly
+
+If output surprises you, ask:
+
+> *Which queue is this callback scheduled in?*
 
 ---
 
-## Senior-Level Insight
-Async bugs are usually **ordering bugs**, not API bugs.
+## Exercises in this section
 
-If you can reliably explain *why* something runs before or after something else,
-you demonstrate real mastery of JavaScript’s execution model.
+These exercises test whether you can:
+
+* Predict execution order
+* Reason about promise chains
+* Handle async errors correctly
+* Understand the event loop model
+
+If you can explain *why* logs appear in a certain order, you understand async JavaScript.
