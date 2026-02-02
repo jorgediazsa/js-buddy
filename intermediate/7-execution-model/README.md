@@ -1,69 +1,177 @@
 # Execution Model
 
-## What This Topic Is Really About
-- How JavaScript prepares and executes code through well-defined phases.
-- Why separating *creation* from *execution* explains hoisting, TDZ, and call stack behavior.
-- Interviewers use this topic to test whether you can reason precisely about runtime, not just recall rules.
+This section explains **how JavaScript code is actually executed**: from parsing and hoisting, through execution contexts, to the call stack and interaction with the event loop. The goal is to give you a *runtime mental model* precise enough to predict behavior line by line.
 
-## Core Concepts
-- Two phases per execution context: **creation phase** and **execution phase**.
-- Execution Context types: **Global** and **Function** (eval is legacy).
-- During creation:
-  - Function declarations are fully initialized.
-  - `var` bindings are created and initialized to `undefined`.
-  - `let`/`const` bindings are created but left uninitialized (TDZ).
-- During execution:
-  - Statements run top to bottom.
-  - Bindings receive values when assignments are executed.
-- Call Stack:
-  - LIFO structure.
-  - Only the top frame executes at any time.
-- Lexical Environment vs Variable Environment:
-  - Historically distinct; today mostly unified but still relevant conceptually.
+The exercises in this module are intentionally designed to surface gaps between “I know the syntax” and “I know what the engine does”.
 
-## Code Examples
+---
+
+## Why this matters
+
+Many JavaScript bugs are not logical bugs, but **execution-order bugs**:
+
+* Code runs earlier or later than expected
+* Variables exist but are `undefined`
+* Functions behave differently depending on call timing
+
+If you understand the execution model, these stop being surprises.
+
+---
+
+## Parsing and Compilation (High-level)
+
+Before any code runs, the JavaScript engine:
+
+1. Parses the source code
+2. Builds scopes and bindings
+3. Hoists declarations
+
+No code is executed during this phase, but **bindings are created**.
+
+---
+
+## Execution Contexts
+
+An **execution context** represents an environment where code runs.
+
+Types:
+
+* Global execution context
+* Function execution context
+* (Module execution context – ES modules)
+
+Each execution context contains:
+
+* Variable environment (bindings)
+* Lexical environment
+* `this` binding
+
+---
+
+## Global Execution Context
+
+Created once when the program starts.
+
+* Global bindings are initialized
+* Top-level code is executed
+* In strict mode, `this` is `undefined`
+
 ```js
-// Creation vs execution
-console.log(a); // undefined
-var a = 1;
+'use strict';
+this; // undefined
 ```
 
-```js
-// TDZ
-try {
-  console.log(b);
-} catch (e) {
-  e.name; // ReferenceError
-}
-let b = 2;
-```
+---
+
+## Function Execution Context
+
+Created **each time a function is called**.
+
+Steps:
+
+1. Parameters are bound
+2. Local variables are hoisted
+3. Function body executes
+4. Context is destroyed on return
+
+This explains why local variables do not persist between calls.
+
+---
+
+## The Call Stack
+
+The call stack tracks **active execution contexts**.
+
+* Functions are pushed on call
+* Popped on return
 
 ```js
-// Hoisting differences
-foo(); // ok
-function foo() {}
-
-bar(); // TypeError
-var bar = function () {};
-```
-
-```js
-// Call stack growth
 function a() { b(); }
-function b() { c(); }
-function c() { return; }
+function b() {}
 a();
 ```
 
-## Gotchas & Tricky Interview Cases
-- Hoisting does not mean early initialization.
-- TDZ exists from scope entry until declaration is evaluated.
-- Stack overflow errors relate to call stack depth, not heap memory.
-- Recursion combined with closures can retain large lexical environments.
-- Misunderstanding creation phase often leads to incorrect mental models of `let`/`const`.
+Execution order:
 
-## Mental Checklist for Interviews
-- Explicitly separate creation phase from execution phase.
-- Track which bindings exist and their initialization state.
-- Follow execution context pushes/pops on the call stack.
-- Explain behavior using execution context and environment terminology, not heuristics.
+1. `a` pushed
+2. `b` pushed
+3. `b` popped
+4. `a` popped
+
+---
+
+## Stack Overflow
+
+If the call stack grows without returning, the engine throws:
+
+```txt
+RangeError: Maximum call stack size exceeded
+```
+
+Common cause: uncontrolled recursion.
+
+---
+
+## Hoisting Revisited
+
+Hoisting is a **compile-time effect**:
+
+* `var` bindings exist and are initialized to `undefined`
+* `let` / `const` bindings exist but are uninitialized (TDZ)
+* Function declarations are fully hoisted
+
+Understanding this is required to predict variable visibility.
+
+---
+
+## Execution Order vs Scheduling
+
+Synchronous code:
+
+* Runs immediately
+* Blocks the stack
+
+Asynchronous APIs:
+
+* Schedule work for later
+* Do **not** interrupt the current execution
+
+This distinction is critical before introducing the event loop.
+
+---
+
+## Interaction with the Event Loop (Preview)
+
+When the call stack becomes empty:
+
+* The engine may pull work from task queues
+* New execution contexts are created
+
+Details of queues and async scheduling are covered in the **Async Basics** section.
+
+---
+
+## Common Pitfalls Covered by Exercises
+
+The exercises rely on understanding:
+
+* When bindings are created vs initialized
+* How execution contexts are pushed/popped
+* Why recursion can overflow the stack
+* Why async code never interrupts sync code
+
+If behavior surprises you, ask:
+
+> *What execution context is active right now?*
+
+---
+
+## Exercises in this section
+
+These exercises test whether you can:
+
+* Predict execution order
+* Reason about hoisting effects
+* Understand call stack growth and teardown
+
+If you can explain *why* code runs when it does, you understand the execution model.

@@ -1,72 +1,213 @@
 # Error Handling
 
-## What This Topic Is Really About
-- Error handling in JavaScript is about **control flow interruption and propagation**, not just catching exceptions.
-- The most common mistakes come from mixing synchronous and asynchronous error models.
-- Interviewers use this topic to test whether you can reason about *where* an error travels and *who* is responsible for handling it.
+This section explains **how JavaScript represents, throws, propagates, and handles errors** at runtime — synchronously and asynchronously. The goal is to build a *predictive model* of failure paths, not just to memorize `try/catch` syntax.
 
-## Core Concepts
-- `throw` immediately interrupts the current execution context.
-- `try/catch` only handles **synchronous** errors in the same call stack.
-- Asynchronous errors propagate through **callbacks or promise chains**, not `try/catch`.
-- Promises represent a separate error channel via rejection.
-- `finally` always executes, regardless of success or failure.
-- `async/await` is syntax sugar over promises; error semantics are unchanged.
+The exercises are designed to surface common mistakes: swallowed errors, broken async error handling, and incorrect assumptions about propagation.
 
-## Code Examples
+---
+
+## Why this matters
+
+Production bugs often come from *error handling*, not business logic:
+
+* Errors swallowed silently
+* Async failures never caught
+* Incorrect retries or partial state updates
+
+If you can answer *“where does this error go?”*, you can design reliable systems.
+
+---
+
+## What is an Error?
+
+In JavaScript, errors are **objects**.
+
 ```js
-// try/catch only works synchronously
+const err = new Error('boom');
+```
+
+Key properties:
+
+* `name`
+* `message`
+* `stack` (non-standard but widely supported)
+
+Throwing an error interrupts execution immediately.
+
+---
+
+## Throwing Errors
+
+```js
+throw new Error('invalid state');
+```
+
+Rules:
+
+* You can throw **any value** (but should not)
+* Best practice: throw `Error` or subclasses
+
+```js
+throw 'boom'; // valid, but bad practice
+```
+
+---
+
+## Synchronous Propagation
+
+Errors propagate **up the call stack** until caught.
+
+```js
+function a() { b(); }
+function b() { throw new Error(); }
+a();
+```
+
+If uncaught, the program terminates.
+
+---
+
+## `try` / `catch`
+
+```js
 try {
-  setTimeout(() => {
-    throw new Error('x');
-  }, 0);
-} catch (e) {
-  // never runs
+  risky();
+} catch (err) {
+  handle(err);
 }
 ```
 
-```js
-// Promise rejection propagation
-Promise.resolve()
-  .then(() => {
-    throw new Error('y');
-  })
-  .catch(e => e.message);
-```
+Rules:
+
+* Only catches **synchronous** errors inside the block
+* Does not catch async errors unless awaited
+
+---
+
+## `finally`
 
 ```js
-// async/await error handling
-async function f() {
-  throw new Error('z');
-}
-
-(async () => {
-  try {
-    await f();
-  } catch (e) {
-    e.message; // 'z'
-  }
-})();
-```
-
-```js
-// finally always runs
 try {
   return 1;
 } finally {
-  console.log('cleanup');
+  cleanup();
 }
 ```
 
-## Gotchas & Tricky Interview Cases
-- Throwing non-`Error` values loses stack traces and debugging context.
-- Errors inside callbacks bypass outer `try/catch`.
-- Unhandled promise rejections can crash processes (Node.js).
-- `finally` executes even after `return` or `throw`.
-- Swallowing errors in `.catch` can hide failures.
+* Always runs
+* Even if an error is thrown or returned
 
-## Mental Checklist for Interviews
-- Identify the sync vs async boundary.
-- Trace the exact propagation path of the error.
-- State who owns handling responsibility.
-- Prefer `Error` objects and explicit propagation.
+Used for cleanup, not control flow.
+
+---
+
+## Rethrowing Errors
+
+If you catch an error but cannot handle it, **rethrow**:
+
+```js
+catch (err) {
+  log(err);
+  throw err;
+}
+```
+
+Failing to rethrow **swallows** the error.
+
+---
+
+## Custom Error Types
+
+Use subclasses to encode intent:
+
+```js
+class ValidationError extends Error {}
+```
+
+This allows callers to distinguish failure modes.
+
+---
+
+## Errors in Promises
+
+Promise errors propagate through the chain:
+
+```js
+Promise.resolve()
+  .then(() => { throw new Error(); })
+  .catch(err => {});
+```
+
+Rules:
+
+* Throwing inside `.then` rejects the next promise
+* `.catch` handles rejections
+
+---
+
+## `async` / `await` and Errors
+
+`await` converts rejections into thrown errors:
+
+```js
+async function fn() {
+  await Promise.reject(new Error()); // throws
+}
+```
+
+Use `try/catch` around `await`.
+
+---
+
+## What `try/catch` Does NOT Catch
+
+```js
+try {
+  setTimeout(() => { throw new Error(); }, 0);
+} catch {}
+```
+
+The error occurs in a **different call stack**.
+
+Async callbacks must handle their own errors.
+
+---
+
+## Error vs Control Flow
+
+Errors should represent **exceptional conditions**, not normal logic.
+
+Avoid:
+
+```js
+try { parse(); } catch { fallback(); }
+```
+
+Prefer explicit checks when failure is expected.
+
+---
+
+## Common Pitfalls Covered by Exercises
+
+The exercises rely on understanding:
+
+* Stack-based propagation
+* Rethrowing vs swallowing
+* Sync vs async error handling
+* Promise rejection flow
+
+If behavior surprises you, ask:
+
+> *Where does this error propagate to?*
+
+---
+
+## Exercises in this section
+
+These exercises test whether you can:
+
+* Handle errors without hiding them
+* Preserve error semantics
+* Reason about async failure paths
+
+If you can explain *why* an error is caught (or not), you understand JavaScript error handling.
