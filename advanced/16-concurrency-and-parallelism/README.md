@@ -231,3 +231,11 @@ Use:
 - fixed operation counts
 - deterministic orchestration of interleavings
 - invariant checks (counts, no overlap, no missing items)
+
+
+## Practical constraints & interview caveats
+
+- **Browsers vs Node:** `SharedArrayBuffer` is available in browsers only under **cross-origin isolation** (COOP/COEP). In Node.js it is available without that requirement.
+- **Atomics.wait / Atomics.notify:** `Atomics.wait` only works on **Int32Array** (and BigInt64Array in newer runtimes) and blocks the calling **agent** (thread). In Node, it is usable inside Worker Threads.
+- **Determinism:** Real data races are nondeterministic. Many exercises here use *deterministic interleavings* to prove correctness of synchronization logic without relying on timing.
+

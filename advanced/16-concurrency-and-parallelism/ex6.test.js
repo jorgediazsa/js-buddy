@@ -82,6 +82,8 @@ function runProducer(modulePath, payload) {
       popped.push(queue.pop());
     }
 
+    assert(queue.size() === 0, 'Expected queue to be empty after draining');
+
     const nonNull = popped.filter((x) => x !== null);
 
     assert(
@@ -100,6 +102,9 @@ function runProducer(modulePath, payload) {
 
   {
     const queue = createConcurrentQueue({ capacity: 3 });
+
+    assert(queue.pop() === null, 'Expected pop() to return null when empty');
+
     assert(queue.push(1) === true, 'Expected push 1 accepted');
     assert(queue.push(2) === true, 'Expected push 2 accepted');
     assert(queue.push(3) === true, 'Expected push 3 accepted');

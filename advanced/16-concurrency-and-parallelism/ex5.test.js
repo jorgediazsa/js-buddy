@@ -8,6 +8,8 @@ function assert(condition, message) {
 
 const abaDetected = simulateABA();
 
+assert(typeof abaDetected === 'boolean', 'simulateABA must return a boolean');
+
 assert(
   abaDetected === true,
   'Expected ABA pattern to be detected via version-aware reasoning'
