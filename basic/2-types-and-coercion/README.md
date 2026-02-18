@@ -60,7 +60,7 @@ JavaScript has two equality operators with different intent:
 
 Important:
 
-- `==` is deterministic, not random — but error-prone.
+- `==` is deterministic, not random - but error-prone.
 - Senior engineers should be able to **explain the coercion**, not just avoid the operator.
 
 ---

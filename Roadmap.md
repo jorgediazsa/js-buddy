@@ -87,67 +87,67 @@ Basic → Intermediate → Advanced
 
 ## 🔴 Advanced
 
-### 13. JavaScript Engine Internals (V8-centric)
+### 13. [JavaScript Engine Internals (V8-centric)](advanced/13-javascript-engine-internals)
 13.1 Parsing → bytecode → JIT compilation  
 13.2 Hidden classes and shape transitions  
 13.3 Inline caches  
 13.4 Deoptimization triggers (real examples)
 
-### 14. Memory Management & GC
+### 14. [Memory Management & GC](advanced/14-memory-management)
 14.1 Garbage collection strategies  
 14.2 Generational GC  
 14.3 Mark-and-sweep vs mark-compact  
 14.4 Memory leaks in real applications  
 14.5 Heap snapshots and leak detection
 
-### 15. Advanced Asynchronous Behavior
+### 15. [Advanced Asynchronous Behavior](advanced/15-advanced-asynchronous-behavior)
 15.1 Promise internals  
 15.2 Async/await desugaring  
 15.3 Microtask starvation  
 15.4 Backpressure concepts  
 15.5 Async iterators and streams
 
-### 16. Concurrency & Parallelism
+### 16. [Concurrency & Parallelism](advanced/16-concurrency-and-parallelism)
 16.1 Single-threaded model myths  
 16.2 Web Workers / Worker Threads  
 16.3 SharedArrayBuffer & Atomics  
 16.4 Race conditions in JS  
 16.5 Designing thread-safe abstractions
 
-### 17. Performance Optimization
+### 17. [Performance Optimization](advanced/17-performance-optimization)
 17.1 Measuring vs guessing performance  
 17.2 CPU profiling and flamegraphs  
 17.3 Allocation hot paths  
 17.4 Avoiding deopts  
 17.5 Data-oriented design in JS
 
-### 18. Metaprogramming
+### 18. [Metaprogramming](advanced/18-metaprogramming)
 18.1 Proxies (non-trivial traps)  
 18.2 Reflect API  
 18.3 Symbols and well-known symbols  
 18.4 Custom behavior with `Symbol.toPrimitive`
 
-### 19. Security
+### 19. [Security](advanced/19-security)
 19.1 Prototype pollution attacks  
 19.2 Sandbox escapes (conceptual)  
 19.3 Secure object creation patterns  
 19.4 Defensive coding for shared runtimes
 
-### 20. Node.js Internals (Frequently Asked)
+### 20. [Node.js Internals (Frequently Asked)](advanced/20-nodejs-internals)
 20.1 libuv architecture  
 20.2 Event loop phases (Node-specific)  
 20.3 Async Hooks  
 20.4 Worker Threads vs Cluster  
 20.5 Streams internals and backpressure
 
-### 21. System Design with JavaScript
+### 21. [System Design with JavaScript](advanced/21-system-design-with-javascript)
 21.1 CPU-bound vs IO-bound workloads  
 21.2 Scaling Node.js services  
 21.3 Memory limits and tuning  
 21.4 Designing high-throughput APIs  
 21.5 Failure modes and resilience
 
-### 22. Language Design & Tradeoffs
+### 22. [Language Design & Tradeoffs](advanced/22-language-design-and-tradeoffs)
 22.1 Why JavaScript behaves the way it does  
 22.2 Historical design constraints  
 22.3 Comparing JS to Go/Rust/Java  

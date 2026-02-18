@@ -1,6 +1,6 @@
 # Functions
 
-This section focuses on **how functions actually work at runtime** in JavaScript. The goal is to understand *execution*, *binding*, and *scope* well enough to reason about bugs, edge cases, and interview questions — not just to write working code.
+This section focuses on **how functions actually work at runtime** in JavaScript. The goal is to understand *execution*, *binding*, and *scope* well enough to reason about bugs, edge cases, and interview questions - not just to write working code.
 
 The exercises in this section intentionally expose common misunderstandings around `this`, closures, arguments, and function identity.
 
@@ -179,4 +179,4 @@ These exercises intentionally test:
 * Whether you can predict execution order
 * Whether you can reason about identity and mutation
 
-If you can explain *why* a function returns a value — not just that it does — you understand JavaScript functions.
+If you can explain *why* a function returns a value - not just that it does – you understand JavaScript functions.

@@ -1,6 +1,6 @@
 # Error Handling
 
-This section explains **how JavaScript represents, throws, propagates, and handles errors** at runtime — synchronously and asynchronously. The goal is to build a *predictive model* of failure paths, not just to memorize `try/catch` syntax.
+This section explains **how JavaScript represents, throws, propagates, and handles errors** at runtime - synchronously and asynchronously. The goal is to build a *predictive model* of failure paths, not just to memorize `try/catch` syntax.
 
 The exercises are designed to surface common mistakes: swallowed errors, broken async error handling, and incorrect assumptions about propagation.
 
